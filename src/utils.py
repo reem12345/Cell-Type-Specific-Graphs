@@ -21,31 +21,6 @@ import torch
 from torch import nn
 device = 'cuda'
 
-# def rbf_kernel(x, y, gamma):
-#     # Compute the Gaussian RBF kernel between two sets of data
-#     x_norm = (x**2).sum(1).unsqueeze(1)
-#     y_norm = (y**2).sum(1).unsqueeze(0)
-#     dist = x_norm + y_norm - 2.0 * torch.mm(x, y.t())
-#     return torch.exp(-gamma * dist)
-
-# def mmd_distance(x, y, gamma):
-#     xx = rbf_kernel(x, x, gamma)
-#     xy = rbf_kernel(x, y, gamma)
-#     yy = rbf_kernel(y, y, gamma)
-
-#     return xx.mean() + yy.mean() - 2 * xy.mean()
-
-# gammas = torch.logspace(1, -3, 50)
-# gammas = gammas.to(dtype=torch.float32)
-
-# def MMD(lhs, rhs, gammas = gammas):
-#     mmd_losses = [mmd_distance(lhs, rhs, g) for g in gammas]
-#     return torch.mean(torch.stack(mmd_losses))
-    
-# def mrrmse(y_pred, y_true, gamma = 0):
-#     loss = torch.tensor(0.0, requires_grad=True).to(y_pred.device)
-#     loss = loss + torch.sqrt(((y_pred - y_true)**(2)).mean(dim=1)).mean()
-#     return loss
 
 def loss_fct(pred, y, perts,mask, ctrl = None, gamma = 0):
     direction_lambda = 0.005
