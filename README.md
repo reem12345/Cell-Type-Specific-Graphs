@@ -1,2 +1,9 @@
 # Cell-Type-Specific-Graphs
-![GitHub Logo](Cell_graphs_methpd.png)
+<p align="center">
+  <img src="Cell_graphs_method.png">
+</p>
+
+
+
+
+
