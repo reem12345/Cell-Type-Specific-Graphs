@@ -101,7 +101,6 @@ def create_coexpression_graph(adata, co_expr_net, cell_type, threshold,
     edges['source'] = edges['source'].map(dic_nodes)
     edges['target'] = edges['target'].map(dic_nodes)
     edges.sort_values(['source', 'target'], inplace = True)
-    edges = to_undirected(torch.tensor(edges[['source', 'target']].to_numpy().T), torch.tensor(edges[0]))
     
     # Get the control samples as basal gene expression in the selected cell type
     ctrl = adata[adata.obs[perturbation_key] == 'control'].copy()
@@ -109,7 +108,7 @@ def create_coexpression_graph(adata, co_expr_net, cell_type, threshold,
     ctrl = ctrl[(ctrl.obs[celltype_key] == cell_type)].copy()
     ctrl = ctrl[:, nodes_list.gene_loc]
     x = torch.tensor(ctrl.X.A).float()
-    G = Data(x=x.T, edge_index=edges[0], pos= list(nodes_list.gene_loc.values), edge_attr = edges[1])
+    G = Data(x=x.T, edge_index=torch.tensor(edges[['source', 'target']].to_numpy().T), pos= list(nodes_list.gene_loc.values), edge_attr = torch.tensor(edges[0]))
     return G
 
 
