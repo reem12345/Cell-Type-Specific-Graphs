@@ -1,0 +1,11 @@
+# Ignore all .h5ad files
+*.h5ad
+
+# Ignore all .csv files
+*.csv
+
+# Ignore all .pdf files
+*.pdf
+
+# Ignore all .pkl files
+*.pkl
