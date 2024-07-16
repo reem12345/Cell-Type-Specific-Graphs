@@ -4,6 +4,8 @@
 
 The preprint is available [here].
 
+![Graphical Abstract](PrePR-CT.png)
+
 ## Directories
 
 ### Data_Notebooks
