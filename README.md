@@ -12,7 +12,7 @@ The preprint is available [here].
 ## Directories
 
 ### Data_Notebooks
-This directory includes the pre-processing notebooks for each dataset, starting from the raw counts:
+This directory includes the pre-processing notebooks for each dataset, starting from the raw counts. The pre-processing steps are explained in the preprint.
 * [Kang dataset](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE96583)
 * [NeurIPS dataset](https://www.kaggle.com/competitions/open-problems-single-cell-perturbations)
 * [McFarland and Chang datasets](http://projects.sanderlab.org/scperturb/datavzrd/scPerturb_vzrd_v1/dataset_info/index_1.html)
@@ -21,7 +21,5 @@ This directory includes the pre-processing notebooks for each dataset, starting 
 
 ### Training
 This directory contains the training notebooks needed to reproduce the figures for each dataset. While results may slightly differ from the paper, they do not affect the overall conclusions.
-
-
 
 
