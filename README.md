@@ -4,7 +4,7 @@
 
 The preprint is available [here].
 
-![Graphical Abstract](PrePR-CT.png)
+![Graphical Abstract](schematic_fig1.pdf)
 
 
 ## Directories
