@@ -21,6 +21,7 @@ import anndata as ad
 from torch_geometric.utils.convert import from_networkx
 from sklearn.metrics import mean_squared_error
 from torch_geometric.data import Data, Batch
+from torch_geometric.utils import to_undirected, is_undirected
 from torch_geometric.data import InMemoryDataset, Data, download_url, extract_zip, HeteroData, Batch
 from torch_geometric.utils import *
 import torch
@@ -77,9 +78,18 @@ def create_coexpression_graph(adata, co_expr_net, cell_type, threshold,
                               gene_key = 'gene_name',  celltype_key = 'cell_type'):
 
     co_expr_net[0] = np.abs(co_expr_net[0])
+    print('number_of_edges before the threshold (5000 x 5000): ',len(co_expr_net))
     co_expr_net = co_expr_net.loc[co_expr_net[0] >= threshold]
+    print('number_of_edges after the threshold: ',len(co_expr_net))
     co_expr_net = co_expr_net.loc[co_expr_net.level_0 != co_expr_net.level_1]
-    co_expr_net = nx.from_pandas_edgelist(co_expr_net, source='level_0', target='level_1', edge_attr=0)
+    print('number_of_edges after removing self loops: ',len(co_expr_net))
+    co_expr_net = nx.from_pandas_edgelist(co_expr_net,source = 'level_0', target = 'level_1', edge_attr=0, create_using=nx.DiGraph())
+    print('final number_of_edges: ', co_expr_net.number_of_edges())
+    connected_components = nx.weakly_connected_components(co_expr_net)
+
+    largest_component = max(connected_components, key=len)
+    
+  #  co_expr_net = co_expr_net.subgraph(largest_component).copy()
     
     nodes_list = adata.var.reset_index()
     nodes_list = nodes_list.loc[nodes_list[gene_key].isin(list(co_expr_net.nodes))]
@@ -89,7 +99,7 @@ def create_coexpression_graph(adata, co_expr_net, cell_type, threshold,
     edges['source'] = edges['source'].map(dic_nodes)
     edges['target'] = edges['target'].map(dic_nodes)
     edges.sort_values(['source', 'target'], inplace = True)
-    
+
     # Get the control samples as basal gene expression in the selected cell type
     ctrl = adata[(adata.obs[celltype_key] == cell_type)].copy()
     ctrl = ctrl[:, nodes_list.gene_loc]
@@ -129,9 +139,8 @@ def rank_genes(dedf):
     dedf["Rank_abs_logfoldchanges"] = dedf["abs_logfoldchanges"].rank(method = 'dense', ascending = False)
     dedf['Final_rank'] = (dedf["Rank_pvals_adj"] * dedf["Rank_abs_logfoldchanges"]) ** (1/2)
     dedf = dedf.sort_values('Final_rank')
-    # display(dedf.head(20))
     num_genes = 100
-    DEGs_name = dedf.head(num_genes).names.values #
+    DEGs_name = dedf.head(num_genes).names.values 
     return list(DEGs_name)
 
 #--------------------------------------------------------------------------------------------------------
@@ -205,7 +214,6 @@ def train(model, num_epochs, lr, weight_decay, cell_type_network, train_loader, 
         train_epoch_loss = running_loss / len(train_loader)
         print(f"Epoch {epoch}, train loss: {train_epoch_loss}")
     return model
-
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -256,9 +264,11 @@ def Inference(cell_type_network, model, save_path_res,
     if mean_or_std:
         x = np.mean(truth, axis = 0)
         y = np.mean(pred, axis = 0) 
+
     else: 
         x = np.std(truth, axis = 0) 
         y = np.std(pred, axis = 0) 
+        data_to_plot = np.vstack([x, y])
 
     sns.set_style("darkgrid")
     x_coeff = 0.35
