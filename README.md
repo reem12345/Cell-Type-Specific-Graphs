@@ -43,6 +43,9 @@ This directory contains the training notebooks required to reproduce the figures
 
 ## Reproduciblity
 ### Setting up
+
+Create necessary directories:
+
 <pre>
 mkdir model_checkpoints
 mkdir Data
@@ -51,8 +54,8 @@ mkdir Data
 ### Data
 To reproduce the results for a specific dataset, download the corresponding `.h5ad` and `.pkl` files (named after the dataset) from the following links, and place them in the `Data` folder you created during the installation steps: 
 
-- https://figshare.com/s/7beaf41998af17bdbe33  
-- https://figshare.com/s/b7f07ac5c522db3ba3af
+- All datasets are here : https://figshare.com/s/7beaf41998af17bdbe33  
+- NeurIPS dataset: https://figshare.com/s/b7f07ac5c522db3ba3af
 
 ### Running
 The next step is to update the `config_train.yaml` file with the appropriate settings for the selected dataset, and then run the demo notebook `training_testing_demo.ipynb` to train and test the model.Below is an example of how to run different datasets in the paper. For new datasets, we are working on improving reusability.
