@@ -60,7 +60,6 @@ The next step is to update the `config_train.yaml` file with the appropriate set
 
 <pre>
 # Kang dataset
-# modify the path
 # Path to the project root directory (modify as needed)
 project_dir: "../PrePR-CT/"
 
@@ -110,7 +109,8 @@ testing_cell_type: ['CD4 T cells']
 # List of drugs or conditions to hold out for testing
 testing_drugs: ['stimulated']
 
-# Whether the dataset includes multiple perturbation types (e.g., different dosages, durations, or drugs) 
+# Whether the dataset includes multiple unique perturbations (e.g., several different drugs or conditions)
+# Set to True if the dataset includes more than one perturbation across cells.
 multi_pert: False
 
 
@@ -132,20 +132,20 @@ save_path_results: "Results/"
 save_path_models: "model_checkpoints/"
 
 # Filename of the AnnData (.h5ad) dataset to use
-dataset_h5ad: "Kang.h5ad"
+dataset_h5ad: "Neurips_Data_Processed.h5ad"
 
 # Directory containing the precomputed graphs
 graphs_path: "graphs/"
 
 # Name of the graph file or prefix corresponding to the dataset (without extension)
-graphs_data: "Kang"
+graphs_data: "NeurIPS"
 
 # CSV file containing SMILES-based features for all drugs
 SMILES_feat: "SMILES_feat_all_datasets.csv"
 
 params:
   # Number of hidden channels in the GAT layers
-  hidden_channels: 64
+  hidden_channels: 128
 
   # Weight decay (L2 regularization) applied to the optimizer
   weight_decay: 0.00001
@@ -160,16 +160,17 @@ params:
   num_epochs: 100
 
   # Batch size used during training
-  batch_size: 256
+  batch_size: 512
 
 # List of cell types to hold out for testing (out-of-distribution evaluation)
-testing_cell_type: ['CD4 T cells']
+testing_cell_type: ["Myeloid cells", "NK cells", "B cells", "T cells"]
 
 # List of drugs or conditions to hold out for testing
-testing_drugs: ['stimulated']
+testing_drugs: ['Scriptaid', 'Ketoconazole', 'Dactolisib']
 
-# Whether the dataset includes multiple perturbation types (e.g., different dosages, durations, or drugs) 
-multi_pert: False
+# Whether the dataset includes multiple unique perturbations (e.g., several different drugs or conditions)
+# Set to True if the dataset includes more than one perturbation across cells.
+multi_pert: True
 
 </pre>
 
