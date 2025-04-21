@@ -16,8 +16,14 @@ This directory includes the pre-processing notebooks for each dataset, starting 
 
 
 ### Training
-This directory contains the training notebooks needed to reproduce the figures for each dataset. While results may slightly differ from the paper, they do not affect the overall conclusions.
-In order to re-predocue the results for a given dataset, download the .h5ad and .pkl files that named with the dataset name from the following links https://figshare.com/s/7beaf41998af17bdbe33 & https://figshare.com/s/b7f07ac5c522db3ba3af
+
+This directory contains the training notebooks required to reproduce the figures for each dataset. While results may slightly differ from those reported in the paper, these variations do not affect the overall conclusions.
+
+To reproduce the results for a specific dataset, download the corresponding `.h5ad` and `.pkl` files (named after the dataset) from the following links:
+
+- https://figshare.com/s/7beaf41998af17bdbe33  
+- https://figshare.com/s/b7f07ac5c522db3ba3af
+
 
 
 ## Required Packages
