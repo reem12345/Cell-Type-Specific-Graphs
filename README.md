@@ -37,6 +37,8 @@ This directory includes the pre-processing notebooks for each dataset, starting 
 * [McFarland and Chang datasets](http://projects.sanderlab.org/scperturb/datavzrd/scPerturb_vzrd_v1/dataset_info/index_1.html)
 * [Nault dataset](https://github.com/BhattacharyaLab/scVIDR/tree/main)
 
+### graphs 
+This directory contains the cell-type-specific graphs for each dataset, which are required to reproduce the results.
 
 ### Training
 
