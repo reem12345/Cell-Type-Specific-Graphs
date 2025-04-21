@@ -8,7 +8,7 @@
 ## Directories
 
 ### Data_Notebooks
-This directory includes the pre-processing notebooks for each dataset, starting from the raw counts. The pre-processing steps are explained in the preprint.
+This directory includes the pre-processing notebooks for each dataset, starting from the raw counts. The pre-processing steps are explained in the paper.
 * [Kang dataset](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE96583)
 * [NeurIPS dataset](https://www.kaggle.com/competitions/open-problems-single-cell-perturbations)
 * [McFarland and Chang datasets](http://projects.sanderlab.org/scperturb/datavzrd/scPerturb_vzrd_v1/dataset_info/index_1.html)
