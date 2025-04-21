@@ -1,4 +1,4 @@
-project_dir: "/ibex/scratch/alsulara/PrePR-CT/"
+project_dir: "../Cell-Type-Specific-Graphs/"
 data_path: "Data/"
 save_path_results: "Results/"
 save_path_models: "model_checkpoints/"
