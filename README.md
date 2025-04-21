@@ -236,3 +236,5 @@ multi_pert: True
 
 
 ### Output
+
+In the `Results` directory, you will find an AnnData object (.h5ad) for each predicted (cell type, perturbation) pair. Each file contains both the observed and predicted gene expression profiles for the corresponding condition.
