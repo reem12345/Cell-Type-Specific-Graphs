@@ -7,8 +7,8 @@
 ## Installation
 
 Create a conda environment using the following packages:
-<pre> ```
-  # Create a conda environment with Python 3.8.19
+<pre>
+# Create a conda environment with Python 3.8.19
 conda create -n preprct python=3.8.19
 
 # Activate the environment
@@ -30,7 +30,7 @@ pip install ipywidgets --upgrade
 mkdir model_checkpoints
 mkdir Data
 
-  ``` </pre>
+</pre>
 
 ## Directories
 
