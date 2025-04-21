@@ -61,7 +61,7 @@ The next step is to update the `config_train.yaml` file with the appropriate set
 <pre>
 # Kang dataset
 # Path to the project root directory (modify as needed)
-project_dir: "../PrePR-CT/"
+project_dir: "../Cell-Type-Specific-Graphs/"
 
 # Folder where the input data files (.h5ad, .pkl) are stored
 data_path: "Data/"
@@ -120,7 +120,7 @@ multi_pert: False
 <pre>
 # NeurIPS dataset
 # Path to the project root directory (modify as needed)
-project_dir: "../PrePR-CT/"
+project_dir: "../Cell-Type-Specific-Graphs/"
 
 # Folder where the input data files (.h5ad, .pkl) are stored
 data_path: "Data/"
@@ -179,7 +179,7 @@ multi_pert: True
 # McFarland dataset
 # modify the path
 # Path to the project root directory (modify as needed)
-project_dir: "../PrePR-CT/"
+project_dir: "../Cell-Type-Specific-Graphs/"
 
 # Folder where the input data files (.h5ad, .pkl) are stored
 data_path: "Data/"
@@ -204,7 +204,7 @@ SMILES_feat: "SMILES_feat_all_datasets.csv"
 
 params:
   # Number of hidden channels in the GAT layers
-  hidden_channels: 64
+  hidden_channels: 128
 
   # Weight decay (L2 regularization) applied to the optimizer
   weight_decay: 0.00001
@@ -216,19 +216,20 @@ params:
   learning_rate: -3
 
   # Number of training epochs
-  num_epochs: 100
+  num_epochs: 200
 
   # Batch size used during training
   batch_size: 256
 
 # List of cell types to hold out for testing (out-of-distribution evaluation)
-testing_cell_type: ['CD4 T cells']
+testing_cell_type: ['BICR31', 'COLO680N', 'LNCAPCLONEFGC', 'RCC10RGB', 'TEN']
 
 # List of drugs or conditions to hold out for testing
-testing_drugs: ['stimulated']
+testing_drugs: ['JQ1', 'Bortezomib']
 
-# Whether the dataset includes multiple perturbation types (e.g., different dosages, durations, or drugs) 
-multi_pert: False
+# Whether the dataset includes multiple unique perturbations (e.g., several different drugs or conditions)
+# Set to True if the dataset includes more than one perturbation across cells.
+multi_pert: True
 
 
 </pre>
