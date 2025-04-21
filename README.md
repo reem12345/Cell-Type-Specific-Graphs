@@ -44,9 +44,11 @@ To reproduce the results for a specific dataset, download the corresponding `.h5
 - https://figshare.com/s/7beaf41998af17bdbe33  
 - https://figshare.com/s/b7f07ac5c522db3ba3af
 
-The next step is to update the `config_train.yaml` file with the appropriate settings for the selected dataset, and then run the demo notebook `training_testing_demo.ipynb` to train and test the model.Below is an example of how to run the Kang dataset.
+The next step is to update the `config_train.yaml` file with the appropriate settings for the selected dataset, and then run the demo notebook `training_testing_demo.ipynb` to train and test the model.Below is an example of how to run different datasets in the paper. For new datasets, we are working on improving reusability.
+
 
 <pre>
+# Kang dataset
 # modify the path
 project_dir: "../PrePR-CT/"
 data_path: "Data/"
@@ -66,5 +68,30 @@ params:
 testing_cell_type: ['CD4 T cells']
 testing_drugs: ['stimulated']
 multi_pert: False
+
+</pre>
+
+
+<pre>
+# NeurIPS dataset
+# modify the path
+project_dir: "../PrePR-CT/"
+data_path: "Data/"
+save_path_results: "Results/"
+save_path_models: "model_checkpoints/"
+dataset_h5ad: "Neurips_Data_Processed.h5ad"
+graphs_path: "graphs/"
+graphs_data: "NeurIPS"
+SMILES_feat: "SMILES_feat_all_datasets.csv"
+params:
+  hidden_channels: 128
+  weight_decay: 0.00001
+  in_head: 1
+  learning_rate: -3
+  num_epochs: 100
+  batch_size: 512
+testing_cell_type: ["Myeloid cells", "NK cells", "B cells", "T cells"]
+testing_drugs: ['Scriptaid', 'Ketoconazole', 'Dactolisib'] 
+multi_pert: True
 
 </pre>
