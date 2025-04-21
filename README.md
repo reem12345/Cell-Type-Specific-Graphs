@@ -191,13 +191,13 @@ save_path_results: "Results/"
 save_path_models: "model_checkpoints/"
 
 # Filename of the AnnData (.h5ad) dataset to use
-dataset_h5ad: "Kang.h5ad"
+dataset_h5ad: "McFarland_processed.h5ad"
 
 # Directory containing the precomputed graphs
 graphs_path: "graphs/"
 
 # Name of the graph file or prefix corresponding to the dataset (without extension)
-graphs_data: "Kang"
+graphs_data: "McFarland"
 
 # CSV file containing SMILES-based features for all drugs
 SMILES_feat: "SMILES_feat_all_datasets.csv"
