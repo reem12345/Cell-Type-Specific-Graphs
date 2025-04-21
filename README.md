@@ -66,7 +66,7 @@ project_dir: "../PrePR-CT/"
 # Folder where the input data files (.h5ad, .pkl) are stored
 data_path: "Data/"
 
-# Directory where result outputs (e.g., evaluation metrics, plots) will be saved
+# Directory where result outputs will be saved
 save_path_results: "Results/"
 
 # Directory where model checkpoints will be saved during training
@@ -125,7 +125,7 @@ project_dir: "../PrePR-CT/"
 # Folder where the input data files (.h5ad, .pkl) are stored
 data_path: "Data/"
 
-# Directory where result outputs (e.g., evaluation metrics, plots) will be saved
+# Directory where result outputs will be saved
 save_path_results: "Results/"
 
 # Directory where model checkpoints will be saved during training
