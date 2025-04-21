@@ -22,9 +22,6 @@ pip install ipywidgets --upgrade
 
 git clone https://github.com/reem12345/Cell-Type-Specific-Graphs.git
 cd Cell-Type-Specific-Graphs/ 
-  
-mkdir model_checkpoints
-mkdir Data
 
 </pre>
 
@@ -46,6 +43,10 @@ This directory contains the training notebooks required to reproduce the figures
 
 ## Reproduciblity
 ### Setting up
+<pre>
+mkdir model_checkpoints
+mkdir Data
+</pre> 
 
 ### Data
 To reproduce the results for a specific dataset, download the corresponding `.h5ad` and `.pkl` files (named after the dataset) from the following links, and place them in the `Data` folder you created during the installation steps: 
