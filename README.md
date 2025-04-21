@@ -61,24 +61,58 @@ The next step is to update the `config_train.yaml` file with the appropriate set
 <pre>
 # Kang dataset
 # modify the path
+# Path to the project root directory (modify as needed)
 project_dir: "../PrePR-CT/"
+
+# Folder where the input data files (.h5ad, .pkl) are stored
 data_path: "Data/"
+
+# Directory where result outputs (e.g., evaluation metrics, plots) will be saved
 save_path_results: "Results/"
+
+# Directory where model checkpoints will be saved during training
 save_path_models: "model_checkpoints/"
+
+# Filename of the AnnData (.h5ad) dataset to use
 dataset_h5ad: "Kang.h5ad"
+
+# Directory containing the precomputed graphs
 graphs_path: "graphs/"
+
+# Name of the graph file or prefix corresponding to the dataset (without extension)
 graphs_data: "Kang"
+
+# CSV file containing SMILES-based features for all drugs
 SMILES_feat: "SMILES_feat_all_datasets.csv"
+
 params:
+  # Number of hidden channels in the GAT layers
   hidden_channels: 64
+
+  # Weight decay (L2 regularization) applied to the optimizer
   weight_decay: 0.00001
+
+  # Number of attention heads in the input GAT layer
   in_head: 1
+
+  # Learning rate for the optimizer, usually set as 10^learning_rate (e.g., -3 → 0.001)
   learning_rate: -3
+
+  # Number of training epochs
   num_epochs: 100
+
+  # Batch size used during training
   batch_size: 256
+
+# List of cell types to hold out for testing (out-of-distribution evaluation)
 testing_cell_type: ['CD4 T cells']
+
+# List of drugs or conditions to hold out for testing
 testing_drugs: ['stimulated']
+
+# Whether the dataset includes multiple perturbation types (e.g., different dosages, durations, or drugs) 
 multi_pert: False
+
 
 </pre>
 
@@ -143,24 +177,58 @@ multi_pert: False
 <pre>
 # McFarland dataset
 # modify the path
+# Path to the project root directory (modify as needed)
 project_dir: "../PrePR-CT/"
+
+# Folder where the input data files (.h5ad, .pkl) are stored
 data_path: "Data/"
+
+# Directory where result outputs (e.g., evaluation metrics, plots) will be saved
 save_path_results: "Results/"
+
+# Directory where model checkpoints will be saved during training
 save_path_models: "model_checkpoints/"
-dataset_h5ad: "McFarland_processed.h5ad"
+
+# Filename of the AnnData (.h5ad) dataset to use
+dataset_h5ad: "Kang.h5ad"
+
+# Directory containing the precomputed graphs
 graphs_path: "graphs/"
-graphs_data: "McFarland"
+
+# Name of the graph file or prefix corresponding to the dataset (without extension)
+graphs_data: "Kang"
+
+# CSV file containing SMILES-based features for all drugs
 SMILES_feat: "SMILES_feat_all_datasets.csv"
+
 params:
-  hidden_channels: 128
+  # Number of hidden channels in the GAT layers
+  hidden_channels: 64
+
+  # Weight decay (L2 regularization) applied to the optimizer
   weight_decay: 0.00001
+
+  # Number of attention heads in the input GAT layer
   in_head: 1
+
+  # Learning rate for the optimizer, usually set as 10^learning_rate (e.g., -3 → 0.001)
   learning_rate: -3
-  num_epochs: 200
+
+  # Number of training epochs
+  num_epochs: 100
+
+  # Batch size used during training
   batch_size: 256
-testing_cell_type: ['COLO680N', 'TEN', 'RCC10RGB', 'LNCAPCLONEFGC', 'BICR31']
-testing_drugs: ['JQ1', 'Bortezomib']
-multi_pert: True
+
+# List of cell types to hold out for testing (out-of-distribution evaluation)
+testing_cell_type: ['CD4 T cells']
+
+# List of drugs or conditions to hold out for testing
+testing_drugs: ['stimulated']
+
+# Whether the dataset includes multiple perturbation types (e.g., different dosages, durations, or drugs) 
+multi_pert: False
+
 
 </pre>
 
