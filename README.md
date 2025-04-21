@@ -24,7 +24,7 @@ To reproduce the results for a specific dataset, download the corresponding `.h5
 - https://figshare.com/s/7beaf41998af17bdbe33  
 - https://figshare.com/s/b7f07ac5c522db3ba3af
 
-
+The next step is to update the `config_train.yaml` file with the appropriate settings for the selected dataset, and then run the demo notebook to train and test the model.
 
 ## Required Packages
 
