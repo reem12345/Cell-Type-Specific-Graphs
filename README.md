@@ -98,7 +98,7 @@ multi_pert: True
 
 
 <pre>
-# NeurIPS dataset
+# McFarland dataset
 # modify the path
 project_dir: "../PrePR-CT/"
 data_path: "Data/"
