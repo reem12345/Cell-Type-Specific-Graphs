@@ -1,7 +1,7 @@
 # Cell-Type-Specific-Graphs
 [![DOI](https://zenodo.org/badge/699833834.svg)](https://doi.org/10.5281/zenodo.15241234)
 
-
+## Summary 
 **PrePR-CT** is a graph-based deep learning method designed to predict transcriptional responses to chemical perturbations in single-cell data. This method utilizes Graph Attention Network (GAT) layers to encode cell-type graphs from batches of training samples. These encoded graphs are then integrated with control gene expression data and predefined perturbation embeddings. The combined data is processed through Multi-Layer Perceptrons (MLPs) to accurately predict gene expression responses.
 
 ![Graphical Abstract](PrePR-CT.png)
