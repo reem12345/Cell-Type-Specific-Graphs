@@ -1,0 +1,33 @@
+project_dir: "/ibex/scratch/alsulara/PrePR-CT/"
+data_path: "Data/"
+save_path_results: "Results/"
+save_path_models: "model_checkpoints/"
+dataset_h5ad: "Kang.h5ad"
+graphs_path: "graphs/"
+graphs_data: "Kang"
+SMILES_feat: "SMILES_feat_all_datasets.csv"
+params:
+  hidden_channels: 64
+  weight_decay: 0.00001
+  in_head: 1
+  learning_rate: -3
+  num_epochs: 100
+  batch_size: 256
+testing_cell_type: ['CD4 T cells']
+testing_drugs: ['stimulated']
+multi_pert: False
+
+# Nault : ['Cholangiocytes', 'Endothelial Cells', 'Hepatocytes - central', 'Hepatocytes - portal', 'Stellate Cells', 'Portal Fibroblasts'] 
+# ['BICR31', 'COLO680N', 'LNCAPCLONEFGC', 'RCC10RGB', 'TEN']
+# ['CD14+ Monocytes', 'CD4 T cells', 'Dendritic cells', 'NK cells', 'CD8 T cells', 'B cells', 'FCGR3A+ Monocytes']
+# NeurIPS: ["Myeloid cells", "NK cells", "B cells", "T cells"]
+#params:
+#  hidden_channels: 128
+#  weight_decay: 0.00001
+#  in_head: 1
+#  learning_rate: -3
+#  num_epochs: 100
+#  batch_size: 512
+# Chang : params =  {'hidden_channels': 128, 'weight_decay': 1e-05, 'in_head': 1, 'learning_rate': -3, 'num_epochs': 200, 'batch_size': 256} 
+# McFarland : {'hidden_channels': 128, 'weight_decay': 1e-05, 'in_head': 1, 'learning_rate': -3, 'num_epochs': 200, 'batch_size': 256}
+# Nault:  {'hidden_channels': 64, 'weight_decay': 1e-05, 'in_head': 4, 'learning_rate': -3, 'num_epochs': 200, 'batch_size': 256}  
