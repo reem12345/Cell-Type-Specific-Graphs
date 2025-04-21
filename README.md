@@ -95,3 +95,28 @@ testing_drugs: ['Scriptaid', 'Ketoconazole', 'Dactolisib']
 multi_pert: True
 
 </pre>
+
+
+<pre>
+# NeurIPS dataset
+# modify the path
+project_dir: "../PrePR-CT/"
+data_path: "Data/"
+save_path_results: "Results/"
+save_path_models: "model_checkpoints/"
+dataset_h5ad: "McFarland_processed.h5ad"
+graphs_path: "graphs/"
+graphs_data: "McFarland"
+SMILES_feat: "SMILES_feat_all_datasets.csv"
+params:
+  hidden_channels: 128
+  weight_decay: 0.00001
+  in_head: 1
+  learning_rate: -3
+  num_epochs: 200
+  batch_size: 256
+testing_cell_type: ['COLO680N', 'TEN', 'RCC10RGB', 'LNCAPCLONEFGC', 'BICR31']
+testing_drugs: ['JQ1', 'Bortezomib']
+multi_pert: True
+
+</pre>
