@@ -7,7 +7,7 @@
 ## Installation
 
 Create a conda environment using the following packages:
-<pre> ```bash # ... 
+<pre> ```
   # Create a conda environment with Python 3.8.19
 conda create -n preprct python=3.8.19
 
