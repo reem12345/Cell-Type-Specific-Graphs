@@ -30,7 +30,7 @@ from torch import nn
 device = 'cuda'
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
-
+warnings.simplefilter(action='ignore', category=UserWarning)
     
 def loss_fct(pred,y, perts):
     """
@@ -58,8 +58,10 @@ def Correlation_matrix(adata, cell_type, cell_type_key,
         ad = adata[ (adata.obs[cell_type_key] == cell_type), :].copy()
     else:
         ad = adata[ (adata.obs[cell_type_key] == cell_type), hv_genes_cells[cell_type] ].copy()
-        
-    X = ad.X.A
+    try: 
+        X = ad.X.A
+    except: 
+        X = ad.X
     genes = ad.var.index.values.tolist()
     
     out = np.corrcoef(X, rowvar= False)
@@ -103,7 +105,10 @@ def create_coexpression_graph(adata, co_expr_net, cell_type, threshold,
     # Get the control samples as basal gene expression in the selected cell type
     ctrl = adata[(adata.obs[celltype_key] == cell_type)].copy()
     ctrl = ctrl[:, nodes_list.gene_loc]
-    x = torch.tensor(ctrl.X.A).float()
+    try: 
+        x = torch.tensor(ctrl.X.A).float()
+    except: 
+        x = torch.tensor(ctrl.X).float()
     G = Data(x=x.T, edge_index=torch.tensor(edges[['source', 'target']].to_numpy().T)
              , pos= list(nodes_list.gene_loc.values), edge_attr = torch.tensor(edges[0]))
     return G   
@@ -112,23 +117,52 @@ def create_coexpression_graph(adata, co_expr_net, cell_type, threshold,
 
 def create_cells(stim_data, cell_type_network, canonical_smiles):
     cells = []
-    print(stim_data.obs.cell_type.unique(), stim_data.obs.condition.unique())
-    for cov_drug in tq.tqdm(stim_data.obs.cov_drug.unique()):
-        cell_type = cov_drug.split("_")[0]
-        genes = cell_type_network[cell_type].pos.tolist()
-        adata_cov_drug = stim_data[stim_data.obs.cov_drug == cov_drug, :].copy()
-        drug = cov_drug.split("_")[1]            
-        for sample in tq.tqdm(adata_cov_drug, leave = False):
+    obs = stim_data.obs
+    print(obs.cell_type.unique(), obs.condition.unique())
+
+    # Group the data by cov_drug to avoid filtering repeatedly
+    cov_drug_groups = {
+        cov_drug: stim_data[obs.cov_drug == cov_drug, :].copy()
+        for cov_drug in obs.cov_drug.unique()
+    }
+
+    for cov_drug, adata_cov_drug in tq.tqdm(cov_drug_groups.items(), desc="Processing cov_drugs"):
+        try:
+            cell_type, drug = cov_drug.split("_", 1)
+        except ValueError:
+            # If splitting fails, skip this group
+            continue
+
+        # Iterate over each sample in the current group
+        for sample in tq.tqdm(adata_cov_drug, leave=False, desc=f"Processing {cov_drug} samples"):
+            # Convert the control layer to a tensor
             x = torch.tensor(sample.layers['ctrl_x'])
+            y = torch.tensor(sample.X.A)
+
             if canonical_smiles is None:
-                cell = Data(x = x, y = torch.tensor(sample.X.A), #pert_label = pert, 
-                        cell_type = cell_type, cov_drug = cov_drug, drug = drug)
-            else: 
-                pert =  torch.tensor(canonical_smiles[sample.obs['condition'].values[0]])
-                cell = Data(x = x, y = torch.tensor(sample.X.A), pert_label = pert, 
-                            cell_type = cell_type, cov_drug = cov_drug, drug = drug)
+                cell = Data(
+                    x=x,
+                    y=y,
+                    cell_type=cell_type,
+                    cov_drug=cov_drug,
+                    drug=drug
+                )
+            else:
+                # Retrieve the condition from the sample's observation and convert the corresponding SMILES fingerprint to tensor
+                condition = sample.obs['condition'].values[0]
+                pert = torch.tensor(canonical_smiles[condition]).unsqueeze(0)
+                cell = Data(
+                    x=x,
+                    y=y,
+                    pert_label=pert,
+                    cell_type=cell_type,
+                    cov_drug=cov_drug,
+                    drug=drug
+                )
             cells.append(cell)
+
     return cells
+
 
 #-------------------------------------------------------------------------------------------------------------
 
@@ -205,7 +239,7 @@ def train(model, num_epochs, lr, weight_decay, cell_type_network, train_loader, 
             cell_graphs_pos = {Cell: cell_type_network[Cell].pos.to(device) for Cell in np.unique(cell_type)}
             cell_graphs_edges = {Cell: cell_type_network[Cell].edge_index.to(device) for Cell in np.unique(cell_type)}
             out = model(cell_graphs_x, cell_graphs_edges, 
-                        cell_type, cell_graphs_edges.keys(), ctrl, pert_label, cell_graphs_pos, multi_pert)
+                        cell_type, cell_graphs_edges.keys(), ctrl, pert_label, cell_graphs_pos)
             loss = loss_fct(out,y, sample.cov_drug) 
             optimizer.zero_grad()
             loss.backward()
@@ -216,25 +250,62 @@ def train(model, num_epochs, lr, weight_decay, cell_type_network, train_loader, 
     return model
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 
+import numpy as np
+import pandas as pd
+import scanpy as sc
+import torch
 
-def Inference(cell_type_network, model, save_path_res,
-              ood_loader, cell_type, adata, testing_drug, degs_dict,
-              device = 'cuda', mean_or_std = True, plot = True, multi_pert = True):
+def create_anndata(pred_p, truth_p, adata, cell_type_network, p):
+    # Extract cell type (c) and drug (d) from the input parameter `p`
+    c = p.split('_')[0]
+    d = p.split('_')[1]
+
+    # Retrieve the positions of the genes for the specified cell type
+    pos_genes = cell_type_network[c].pos
+
+
+    # Get control data from the AnnData object
+    ctrl_p = adata[adata.obs.cov_drug == c + '_control', pos_genes.tolist()].X.A
+
+    # Combine the data (truth, reaction, control)
+    combined_data = np.vstack([truth_p, pred_p, ctrl_p])
+
+    # Create observation DataFrame with cell type and condition
+    cell_type = np.array([c] * combined_data.shape[0])
+
+    # Assign conditions
+    condition_truth = np.array([d] * truth_p.shape[0])  # For truth, condition = d
+    condition_pred = np.array(['pred_' + d] * pred_p.shape[0])  # For prediction, condition = 'pred_<d>'
+    condition_ctrl = np.array(['control'] * ctrl_p.shape[0])  # For control, condition = 'control'
+
+    # Combine all conditions
+    condition = np.concatenate([condition_truth, condition_pred, condition_ctrl])
+
+    # Create observation DataFrame
+    obs_df = pd.DataFrame({
+        'cell_type': np.concatenate([cell_type[:truth_p.shape[0]], cell_type[:pred_p.shape[0]], cell_type[:ctrl_p.shape[0]]]),
+        'condition': condition
+    })
+
+    # Create the AnnData object
+    adata_combined = sc.AnnData(X=combined_data, obs=obs_df)
+
+    # You can also assign additional information, such as `var` (genes), if necessary
+    adata_combined.var_names = pos_genes.tolist()
+
+    return adata_combined
+
+
+def Inference_multi_pert(cell_type_network, model, save_path_res,
+              ood_loader, adata, degs_dict, device = 'cuda', mean_or_std = True, plot = True, multi_pert = True):
     """
     The Inference function
     """
     pred = []
     truth = []
-    pos_genes = cell_type_network[cell_type].pos
     with torch.no_grad():
         model.eval()
-        treat = adata[adata.obs.cov_drug == cell_type+'_'+testing_drug, pos_genes.tolist()].copy()
-        ctrl_adata = adata[adata.obs.cov_drug == cell_type+'_control', pos_genes.tolist()].copy()
-        eval_data = sc.concat([treat,ctrl_adata], join = 'outer')
-        mapping_genes_indices = dict(zip(eval_data.var.index.values, list(range(0,len(eval_data.var)))))
-        DEGs_name = pd.Series(eval_data[:, degs_dict].copy().var.index.values)
-        DEGs = DEGs_name.map(mapping_genes_indices).values
-        DEGs_name = DEGs_name.values
+        cov_drugs = []
         for sample in tq.tqdm(ood_loader, leave=False):
             sample = sample.to(device)
             cell_type = sample.cell_type
@@ -249,80 +320,60 @@ def Inference(cell_type_network, model, save_path_res,
             cell_graphs_pos = {Cell: cell_type_network[Cell].pos.to(device) for Cell in np.unique(cell_type)}
             cell_graphs_edges = {Cell: cell_type_network[Cell].edge_index.to(device) for Cell in np.unique(cell_type)}
             out = model(cell_graphs_x, cell_graphs_edges, 
-                        cell_type, cell_graphs_edges.keys(), ctrl, pert_label, cell_graphs_pos, multi_pert)
+                        cell_type, cell_graphs_edges.keys(), ctrl, pert_label, cell_graphs_pos)
             pred.extend(out)
             truth.extend(y)
+            cov_drugs.extend(sample.cov_drug)
    
     pred = torch.stack(pred)
     truth = torch.stack(truth)
-    # R2 
-    pred = (pred).cpu().numpy()[:, pos_genes.tolist()] 
-    truth = (truth).cpu().numpy()[:, pos_genes.tolist()]
-    sign_degs = np.mean(truth, axis = 0) - ctrl_adata.X.mean(0)
-    std_problem = np.where( np.std(pred, axis = 0) == 0.0)[0]
-    pred_adata = pred
-    if mean_or_std:
-        x = np.mean(truth, axis = 0)
-        y = np.mean(pred, axis = 0) 
-
-    else: 
-        x = np.std(truth, axis = 0) 
-        y = np.std(pred, axis = 0) 
-        data_to_plot = np.vstack([x, y])
-
-    sns.set_style("darkgrid")
-    x_coeff = 0.35
-    r2_all = metrics.r2_score(x, y)
-    r2_DEGs = metrics.r2_score(x[DEGs], y[DEGs])
-    print("R2 top 20 DEGs: ", metrics.r2_score(x[DEGs[0:20]], y[DEGs[0:20]]))
-    print("R2 top 50 DEGs: ", metrics.r2_score(x[DEGs[0:50]], y[DEGs[0:50]]))
-
-    if plot:
-        # Scatter plot
-        fig, ax =plt.subplots(figsize = (6,6))
-        sns.regplot(x = x, y = y, ci = None, color="#1C2E54")
-        y_coeff=0.8
-        print("R2 all genes: ", r2_all)
-        ax.text( x.max() -x.max() * x_coeff, y.max() - y_coeff * y.max(),
-                r'$\mathrm{R^2_{\mathrm{\mathsf{all\ genes}}}}$= '+ f"{r2_all:.4f}",fontsize = 'large',
-            )
-        y_coeff=0.9
-        print("R2 top 100 DEGs: ", r2_DEGs)
-        ax.text( x.max() -x.max() * x_coeff, y.max() - y_coeff * y.max(),
-               r'$\mathrm{R^2_{\mathrm{\mathsf{top\ 100 \ DEGs}}}}$= ' + f"{r2_DEGs:.4f}",fontsize = 'large',
-            )
-        n = eval_data.var.index.values
-        print(len(n))
-        for i, txt in enumerate(n):
-            if i in std_problem:
-                ax.scatter(x[i], y[i], color = "#868386")
-        #if degs:
-        for i, txt in enumerate(n):
-            if txt in DEGs_name[0:20]:
-                if sign_degs[0,i] >= 0:
-                    ax.scatter(x[i], y[i], color = "#B5345C")
-                elif sign_degs[0,i] < 0:
-                    ax.scatter(x[i], y[i], color = "green")
-            if txt in DEGs_name[0:10]:
-                ax.annotate(txt, (x[i], y[i]), color = "black")
-        plt.xlabel('Real expression')
-        plt.ylabel('Predicted expression')
-        plt.savefig(save_path_res+"_"+cell_type[0]+'_'+testing_drug+"_R2.pdf", bbox_inches='tight')
-        plt.show()
-            
-        sns.set_style("whitegrid")
-        treat_pred = treat.copy()
-        treat_pred.X = pred_adata.copy()
-        treat_pred.obs['condition'] = 'pred_'+ testing_drug
-        dot_adata = ad.concat([treat_pred, treat.copy(), ctrl_adata.copy()])
-        plt.figure()
-        color_map = sns.light_palette("#1C2E54", as_cmap=True)
-        sc.pl.dotplot(dot_adata,  DEGs_name[0:20], groupby='condition', dendrogram=True, cmap = color_map, show=False)
-        plt.savefig(save_path_res+"_"+cell_type[0]+"_dotplot.pdf", bbox_inches='tight')
-        plt.show()
-        return r2_all, r2_DEGs, DEGs_name, ad.concat([treat_pred, treat.copy()])
-    else: 
-        return r2_all, r2_DEGs, DEGs_name
-
-
-
+    pred = (pred).cpu().numpy()
+    truth = (truth).cpu().numpy()
+    
+    perts = np.array(cov_drugs)
+    for p in (set(perts)):
+        c = p.split('_')[0]
+        d = p.split('_')[1]
+        pos_genes = cell_type_network[c].pos
+        p_pred = pred[:, pos_genes.tolist()] 
+        p_truth = truth[:, pos_genes.tolist()]
+        pert_idx = np.where(perts == p)[0]
+        y_p = p_truth[pert_idx]
+        pred_p = p_pred[pert_idx]
+        Ann_Data = create_anndata(pred_p, y_p, adata, cell_type_network, p)
+        DEGs = degs_dict[p]
+        Ann_Data.uns['DEGs'] = DEGs
+        Ann_Data.write(save_path_res+p+'_pred.h5ad')
+        mse = np.mean((y_p - pred_p) ** 2)
+        print(p, " mse: ", mse)
+        if mean_or_std:
+            x = np.mean(y_p, axis = 0)
+            y = np.mean(pred_p, axis = 0) 
+            r2_all = metrics.r2_score(x, y)
+            print(f"R² value for predicting the **mean** expression of all genes for perturbation '{p}': {r2_all:.4f}")
+            r2_DEGs = metrics.r2_score(x[DEGs], y[DEGs])
+            print(f"R² value for predicting the **mean** of the top 100 DEGs for perturbation '{p}': {r2_DEGs:.4f}")
+        else: 
+            x = np.std(y_p, axis = 0) 
+            y = np.std(pred_p, axis = 0) 
+            data_to_plot = np.vstack([x, y])
+            r2_all = metrics.r2_score(x, y)
+            print(f"R² value for predicting the **standard deviation** expression of all genes for perturbation '{p}': {r2_all:.4f}")
+            r2_DEGs = metrics.r2_score(x[DEGs], y[DEGs])
+            print(f"R² value for predicting the **standard deviation** of the top 100 DEGs for perturbation '{p}': {r2_DEGs:.4f}")
+    
+        sns.set_style("darkgrid")
+        x_coeff = 0.35
+        
+        if plot:
+            # Scatter plot
+            fig, ax =plt.subplots(figsize = (6,6))
+            sns.regplot(x = x, y = y, ci = None, color="#1C2E54")
+            y_coeff=0.8
+            ax.text( x.max() -x.max() * x_coeff, y.max() - y_coeff * y.max(),
+                    r'$\mathrm{R^2_{\mathrm{\mathsf{all\ genes}}}}$= '+ f"{r2_all:.4f}",fontsize = 'large',
+                )
+            y_coeff=0.9
+            ax.text( x.max() -x.max() * x_coeff, y.max() - y_coeff * y.max(),
+                   r'$\mathrm{R^2_{\mathrm{\mathsf{top\ 100 \ DEGs}}}}$= ' + f"{r2_DEGs:.4f}",fontsize = 'large',
+                )

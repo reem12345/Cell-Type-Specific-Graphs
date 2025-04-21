@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from torch_geometric.nn import GCNConv, GATv2Conv
 from torch_geometric.utils import *
 import torch
+import pickle
+
 
 class MLP(torch.nn.Module):
 
@@ -34,7 +36,7 @@ class MLP(torch.nn.Module):
         return self.network(x)
 
 class GNN(torch.nn.Module):
-    def __init__(self, total_genes,num_perts, hidden_channels,in_head, output_channels = 1, act_fct = 'Sigmoid'):
+    def __init__(self, total_genes,num_perts, hidden_channels,in_head, output_channels = 1, act_fct = None, multi_pert = True):
         super().__init__()
         torch.manual_seed(42) 
 
@@ -42,20 +44,22 @@ class GNN(torch.nn.Module):
         self.in_head = in_head
         self.hid = hidden_channels
         self.act_fct = act_fct
-        
+        self.multi_pert = multi_pert
         # GNN layers
         self.conv1 = TransformerConv(-1, hidden_channels, heads=self.in_head) 
         self.lin1 = Linear(-1, hidden_channels*self.in_head)
         self.conv2 = GATConv(-1, hidden_channels, heads=self.in_head,  add_self_loops=True, concat = False)  
         self.lin2 = Linear(-1, hidden_channels)
 
-        self.embd_pert = MLP([600, 128, hidden_channels], self.act_fct)
-        
-        self.lin_predict = MLP([self.total_genes+hidden_channels+hidden_channels, 1024, self.total_genes], self.act_fct)
-        self.lin_predict_single = MLP([self.total_genes+(hidden_channels*self.in_head), 1024, self.total_genes], self.act_fct)
+        self.embd_pert = MLP([124, 124], self.act_fct)
+        self.lin_predict = None
+        if multi_pert == True: 
+            self.lin_predict = MLP([self.total_genes+hidden_channels + 124, 1024, self.total_genes], self.act_fct)
+        else:
+            self.lin_predict = MLP([self.total_genes+(hidden_channels*self.in_head), 1024, self.total_genes], self.act_fct)
 
         
-    def forward(self,x, edge_index, cell_line, cell_type_keys,ctrl, pert, pos, multi_pert):
+    def forward(self,x, edge_index, cell_line, cell_type_keys,ctrl, pert, pos):
         for key in cell_type_keys:
             edge_index[key] = edge_index[key] 
             x[key] = self.conv1(x[key], edge_index[key]) + self.lin1(x[key])
@@ -63,13 +67,12 @@ class GNN(torch.nn.Module):
             
         cell_type_fet = [x[c] for c in cell_line]
         cell_type_fet = torch.cat(cell_type_fet, dim = 0)
-        if multi_pert == False:
+        if self.multi_pert == False:
             x = torch.cat([ ctrl, cell_type_fet], dim = 1)
-            x = self.lin_predict_single(x)
-        if multi_pert == True:
+            x = self.lin_predict(x)
+        if self.multi_pert == True:
             x = torch.cat([ ctrl, cell_type_fet], dim = 1)
-            pert = self.embd_pert(pert)
-            x = torch.cat([x , pert], dim = 1)
+            x = torch.cat([x, self.embd_pert(pert.to(torch.float32))], dim = 1) 
             x = self.lin_predict(x)
         return x
-
+        
