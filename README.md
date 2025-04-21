@@ -4,6 +4,19 @@
 
 ![Graphical Abstract](PrePR-CT.png)
 
+## Installation
+
+Create a conda environment using the following packages:
+```yaml
+conda create -n preprct python=3.8.19
+conda activate -n preprct
+pip install -r requeriments.txt
+pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
+pip install jupyterlab
+pip install torch_geometric==2.5.3
+pip install ipywidgets --upgrade
+mkdir model_checkpoints
+mkdir Data
 
 ## Directories
 
@@ -25,17 +38,3 @@ To reproduce the results for a specific dataset, download the corresponding `.h5
 - https://figshare.com/s/b7f07ac5c522db3ba3af
 
 The next step is to update the `config_train.yaml` file with the appropriate settings for the selected dataset, and then run the demo notebook to train and test the model.
-
-## Required Packages
-
-Create a conda environment using the following packages:
-```yaml
-conda create -n preprct python=3.8.19
-conda activate -n preprct
-pip install -r requeriments.txt
-pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
-pip install jupyterlab
-pip install torch_geometric==2.5.3
-pip install ipywidgets --upgrade
-mkdir model_checkpoints
-mkdir Data
