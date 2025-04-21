@@ -20,6 +20,9 @@ pip install jupyterlab
 pip install torch_geometric==2.5.3
 pip install ipywidgets --upgrade
 
+git clone https://github.com/reem12345/Cell-Type-Specific-Graphs.git
+cd Cell-Type-Specific-Graphs/ 
+  
 mkdir model_checkpoints
 mkdir Data
 
