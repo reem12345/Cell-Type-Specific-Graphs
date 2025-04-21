@@ -17,14 +17,15 @@ This directory includes the pre-processing notebooks for each dataset, starting 
 
 ### Training
 This directory contains the training notebooks needed to reproduce the figures for each dataset. While results may slightly differ from the paper, they do not affect the overall conclusions.
+In order to re-predocue the results for a given dataset, download the .h5ad and .pkl files that named with the dataset name from the following links https://figshare.com/s/7beaf41998af17bdbe33 & https://figshare.com/s/b7f07ac5c522db3ba3af
 
 
 ## Required Packages
 
 Create a conda environment using the following packages:
 ```yaml
-conda create --prefix python=3.8.19
-conda activate --prefix
+conda create -n preprct python=3.8.19
+conda activate -n preprct
 pip install -r requeriments.txt
 pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
 pip install jupyterlab
