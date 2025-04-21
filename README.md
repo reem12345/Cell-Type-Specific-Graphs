@@ -8,25 +8,19 @@
 
 Create a conda environment using the following packages:
 <pre>
-# Create a conda environment with Python 3.8.19
 conda create -n preprct python=3.8.19
 
-# Activate the environment
 conda activate preprct
 
-# Install dependencies
 pip install -r requirements.txt
 
-# Install PyTorch with CUDA 11.7 support
 pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 \
   --extra-index-url https://download.pytorch.org/whl/cu117
 
-# Additional dependencies
 pip install jupyterlab
 pip install torch_geometric==2.5.3
 pip install ipywidgets --upgrade
 
-# Create necessary directories
 mkdir model_checkpoints
 mkdir Data
 
