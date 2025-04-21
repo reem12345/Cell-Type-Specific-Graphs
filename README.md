@@ -1,6 +1,11 @@
 # Cell-Type-Specific-Graphs
 [![DOI](https://zenodo.org/badge/699833834.svg)](https://doi.org/10.5281/zenodo.15241234)
 
+* [Summary](#summary)
+* [Installation](#installation)
+* [Directories](#directories)
+* [Reproduciblity](#reproduciblity)
+
 ## Summary 
 **PrePR-CT** is a graph-based deep learning method designed to predict transcriptional responses to chemical perturbations in single-cell data. This method utilizes Graph Attention Network (GAT) layers to encode cell-type graphs from batches of training samples. These encoded graphs are then integrated with control gene expression data and predefined perturbation embeddings. The combined data is processed through Multi-Layer Perceptrons (MLPs) to accurately predict gene expression responses.
 
@@ -8,7 +13,7 @@
 
 ## Installation
 
-Create a conda environment using the following packages:
+Create a conda environment with the required packages:
 <pre>
 conda create -n preprct python=3.8.19
 
@@ -22,6 +27,8 @@ pip install jupyterlab
 pip install torch_geometric==2.5.3
 pip install ipywidgets --upgrade
 
+# After the conda environment is created, PrePR-CT is simply installed by cloning the repository
+  
 git clone https://github.com/reem12345/Cell-Type-Specific-Graphs.git
 cd Cell-Type-Specific-Graphs/ 
 
