@@ -66,9 +66,10 @@ To reproduce the results for a specific dataset, download the processed data .h5
 - All datasets are here : https://figshare.com/s/7beaf41998af17bdbe33  
 - NeurIPS dataset: https://figshare.com/s/b7f07ac5c522db3ba3af
 
+In case the user wants to generate the above preprocessed data from the raw data, run the corresponding notebook located in the `Data_Notebooks` directory.
+
 ### Running
 The next step is to update the `config_train.yaml` file with the appropriate settings for the selected dataset, and then run the demo notebook `training_testing_demo.ipynb` to train and test the model.Below is an example of how to run different datasets in the paper. For new datasets, we are working on improving reusability.
-
 
 <pre>
 # Kang dataset
