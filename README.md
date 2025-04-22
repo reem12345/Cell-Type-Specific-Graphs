@@ -61,7 +61,7 @@ mkdir Data
 </pre> 
 
 ### Data
-To reproduce the results for a specific dataset, download the corresponding `.h5ad` and `.pkl` files (named after the dataset) from the following links, and place them in the `Data` folder you created during the installation steps: 
+To reproduce the results for a specific dataset, download the processed data .h5ad and .pkl files (named after the dataset) from the following links, and place them in the Data folder you created during the installation steps:
 
 - All datasets are here : https://figshare.com/s/7beaf41998af17bdbe33  
 - NeurIPS dataset: https://figshare.com/s/b7f07ac5c522db3ba3af
