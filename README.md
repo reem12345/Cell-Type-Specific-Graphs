@@ -125,7 +125,7 @@ testing_drugs: ['stimulated']
 # Whether the dataset includes multiple unique perturbations (e.g., several different drugs or conditions)
 # Set to True if the dataset includes more than one perturbation across cells.
 multi_pert: False
-
+</pre>
 
 ### Output
 
