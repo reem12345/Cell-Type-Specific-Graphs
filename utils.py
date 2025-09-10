@@ -387,37 +387,43 @@ def create_anndata(pred_p, truth_p, adata, cell_type_network, p):
     # Retrieve the positions of the genes for the specified cell type
     pos_genes = cell_type_network[c].pos
 
-
-    # Get control data from the AnnData object
+    # Get control data from the AnnData object (for the same cell type, control condition)
     ctrl_p = adata[adata.obs.cov_drug == c + '_control', pos_genes.tolist()].X.A
 
-    # Combine the data (truth, reaction, control)
+    # Stack true response, predicted response, and control into one matrix
     combined_data = np.vstack([truth_p, pred_p, ctrl_p])
 
-    # Create observation DataFrame with cell type and condition
+    # Cell type labels for all rows (truth, prediction, control)
     cell_type = np.array([c] * combined_data.shape[0])
 
-    # Assign conditions
-    condition_truth = np.array([d] * truth_p.shape[0])  # For truth, condition = d
-    condition_pred = np.array(['pred_' + d] * pred_p.shape[0])  # For prediction, condition = 'pred_<d>'
-    condition_ctrl = np.array(['control'] * ctrl_p.shape[0])  # For control, condition = 'control'
+    # Assign conditions:
+    condition_truth = np.array([d] * truth_p.shape[0])              # truth rows → drug label
+    condition_pred = np.array(['pred_' + d] * pred_p.shape[0])      # prediction rows → "pred_drug"
+    condition_ctrl = np.array(['control'] * ctrl_p.shape[0])        # control rows → "control"
 
-    # Combine all conditions
+    # Combine all conditions into a single array
     condition = np.concatenate([condition_truth, condition_pred, condition_ctrl])
 
-    # Create observation DataFrame
+    # Build the observations DataFrame (obs)
     obs_df = pd.DataFrame({
-        'cell_type': np.concatenate([cell_type[:truth_p.shape[0]], cell_type[:pred_p.shape[0]], cell_type[:ctrl_p.shape[0]]]),
+        'cell_type': np.concatenate([
+            cell_type[:truth_p.shape[0]], 
+            cell_type[:pred_p.shape[0]], 
+            cell_type[:ctrl_p.shape[0]]
+        ]),
         'condition': condition
     })
 
-    # Create the AnnData object
+    # Create the AnnData object with expression matrix and observations
     adata_combined = sc.AnnData(X=combined_data, obs=obs_df)
 
-    # You can also assign additional information, such as `var` (genes), if necessary
+    # Assign gene names as variable names
     adata_combined.var_names = pos_genes.tolist()
 
+    # Return the combined AnnData object
     return adata_combined
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------
 
 
 def Inference_multi_pert(cell_type_network, model, save_path_res,
