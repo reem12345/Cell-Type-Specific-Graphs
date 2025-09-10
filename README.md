@@ -14,25 +14,25 @@
 ## Installation
 
 1- Create a conda environment with Python (recommended version 3.8.19):
-<pre>
+```
 conda create -n preprct python=3.8.19
 conda activate preprct
-</pre>
+```
 
 2- Install the necesarry libraries (from `requeriments.txt`):
-<pre>
+```
 pip install -r requirements.txt
 pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
 pip install jupyterlab
 pip install torch_geometric==2.5.3
 pip install ipywidgets --upgrade
-</pre>
+```
 
 3- After previous steps are completed, PrePR-CT is simply installed by cloning the repository:
-<pre>
+```
 git clone https://github.com/reem12345/Cell-Type-Specific-Graphs.git
 cd Cell-Type-Specific-Graphs/ 
-</pre>
+```
 
 ## Directories
 
@@ -53,10 +53,10 @@ This directory includes the training notebooks required to reproduce the figures
 
 ### 1- Setting up
 Create necessary directories:
-<pre>
+```
 mkdir model_checkpoints
 mkdir Data
-</pre> 
+```
 
 ### 2- Data
 To reproduce the results for a specific dataset, download the processed data _.h5ad_ and _.pkl_ files (named after the dataset) from the following links, and place them in the `Data` folder created during the setup step:
@@ -67,9 +67,9 @@ To reproduce the results for a specific dataset, download the processed data _.h
 In case the user wants to generate the above preprocessed data from the raw data, run the corresponding notebook located in the `Data_Notebooks` directory.
 
 ### 3- Usage
-The next step is to update the `config_train.yaml` file, located in the `training` folder, with the appropriate settings for the selected dataset. Below is an example of configuration parameters for different datasets used to reproduce the results. Once the configuration is set, run the `training_testing_demo.ipynb` notebook (located in the `training` folder) to train and test the model. For new datasets, we are actively working on improving reusability and flexibility.
+The next step is to update the `config_train.yaml` file, located in the `training` folder, with the appropriate settings for the selected dataset. Below is an example of configuration parameters for different datasets used to reproduce the results. Once the configuration is set, run the [training_testing_demo.ipynb](https://github.com/reem12345/Cell-Type-Specific-Graphs/blob/main/training/training_testing_demo.ipynb) notebook (located in the `training` folder) to train and test the model. For new datasets, we are actively working on improving reusability and flexibility.
 
-<pre>
+```
 # Kang dataset
 # Path to the project root directory (modify as needed)
 project_dir: "../Cell-Type-Specific-Graphs/"
@@ -123,7 +123,7 @@ testing_drugs: ['stimulated']
 # Whether the dataset includes multiple unique perturbations (e.g., several different drugs or conditions)
 # Set to True if the dataset includes more than one perturbation across cells.
 multi_pert: False
-</pre>
+```
 
 ### 4- Output
 
