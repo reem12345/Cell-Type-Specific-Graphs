@@ -37,18 +37,18 @@ cd Cell-Type-Specific-Graphs/
 ## Directories
 
 ### Data_Notebooks
-This directory includes the pre-processing notebooks for each dataset, starting from the raw counts. The pre-processing steps are explained in the paper.
+This directory contains the pre-processing notebooks for each dataset, starting from the raw counts. The pre-processing steps are described in detail in the paper.
 * [Kang dataset](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE96583)
 * [NeurIPS dataset](https://www.kaggle.com/competitions/open-problems-single-cell-perturbations)
 * [McFarland and Chang datasets](http://projects.sanderlab.org/scperturb/datavzrd/scPerturb_vzrd_v1/dataset_info/index_1.html)
 * [Nault dataset](https://github.com/BhattacharyaLab/scVIDR/tree/main)
 
-### graphs 
+### Graphs 
 This directory contains the cell-type-specific graphs for each dataset, which are required to reproduce the results.
 
 ### Training
 
-This directory contains the training notebooks required to reproduce the figures for each dataset. While results may slightly differ from those reported in the paper, these variations do not affect the overall conclusions.
+This directory includes the training notebooks required to reproduce the figures for each dataset. While results may slightly differ from those reported in the paper, these variations do not affect the overall conclusions.
 
 ## Reproduciblity
 ### Setting up
