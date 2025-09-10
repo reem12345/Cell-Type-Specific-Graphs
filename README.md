@@ -69,7 +69,7 @@ In case the user wants to generate the above preprocessed data from the raw data
 ### 3- Usage
 The next step is to update the `config_train.yaml` file, located in the `training` folder, with the appropriate settings for the selected dataset. Below is an example of configuration parameters for different datasets used to reproduce the results. Once the configuration is set, run the [training_testing_demo.ipynb](https://github.com/reem12345/Cell-Type-Specific-Graphs/blob/main/training/training_testing_demo.ipynb) notebook (located in the `training` folder) to train and test the model. For new datasets, we are actively working on improving reusability and flexibility.
 
-```
+```yaml
 # Kang dataset
 # Path to the project root directory (modify as needed)
 project_dir: "../Cell-Type-Specific-Graphs/"
