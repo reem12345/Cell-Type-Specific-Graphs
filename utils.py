@@ -103,39 +103,70 @@ def Correlation_matrix(adata, cell_type, cell_type_key,
 def create_coexpression_graph(adata, co_expr_net, cell_type, threshold,
                               gene_key = 'gene_name',  celltype_key = 'cell_type'):
 
+    # Take absolute values of co-expression weights (to ignore sign of correlation)
     co_expr_net[0] = np.abs(co_expr_net[0])
-    print('number_of_edges before the threshold (5000 x 5000): ',len(co_expr_net))
+    print('number_of_edges before the threshold (5000 x 5000): ', len(co_expr_net))
+
+    # Keep only edges above the given threshold
     co_expr_net = co_expr_net.loc[co_expr_net[0] >= threshold]
-    print('number_of_edges after the threshold: ',len(co_expr_net))
+    print('number_of_edges after the threshold: ', len(co_expr_net))
+
+    # Remove self-loops (edges where source == target)
     co_expr_net = co_expr_net.loc[co_expr_net.level_0 != co_expr_net.level_1]
-    print('number_of_edges after removing self loops: ',len(co_expr_net))
-    co_expr_net = nx.from_pandas_edgelist(co_expr_net,source = 'level_0', target = 'level_1', edge_attr=0, create_using=nx.DiGraph())
+    print('number_of_edges after removing self loops: ', len(co_expr_net))
+
+    # Convert filtered dataframe into a directed graph with edge weights
+    co_expr_net = nx.from_pandas_edgelist(
+        co_expr_net,
+        source='level_0', target='level_1',
+        edge_attr=0, create_using=nx.DiGraph()
+    )
     print('final number_of_edges: ', co_expr_net.number_of_edges())
+
+    # Get all weakly connected components in the graph
     connected_components = nx.weakly_connected_components(co_expr_net)
 
+    # Identify the largest connected component
     largest_component = max(connected_components, key=len)
     
-  #  co_expr_net = co_expr_net.subgraph(largest_component).copy()
+    # Optional: restrict graph to the largest connected component
+    # co_expr_net = co_expr_net.subgraph(largest_component).copy()
     
+    # Map gene names to their positions in adata.var
     nodes_list = adata.var.reset_index()
     nodes_list = nodes_list.loc[nodes_list[gene_key].isin(list(co_expr_net.nodes))]
-    nodes_list = pd.DataFrame({'gene_loc': nodes_list.index.values, 'gene_id': nodes_list[gene_key].values})
+    nodes_list = pd.DataFrame({
+        'gene_loc': nodes_list.index.values,
+        'gene_id': nodes_list[gene_key].values
+    })
+
+    # Dictionary: gene_id → index in nodes_list
     dic_nodes = dict(zip(nodes_list.gene_id, nodes_list.index))
+
+    # Convert networkx graph back to edge list dataframe
     edges = nx.to_pandas_edgelist(co_expr_net)
     edges['source'] = edges['source'].map(dic_nodes)
     edges['target'] = edges['target'].map(dic_nodes)
-    edges.sort_values(['source', 'target'], inplace = True)
+    edges.sort_values(['source', 'target'], inplace=True)
 
-    # Get the control samples as basal gene expression in the selected cell type
+    # Select control samples for the given cell type
     ctrl = adata[(adata.obs[celltype_key] == cell_type)].copy()
     ctrl = ctrl[:, nodes_list.gene_loc]
+
+    # Convert control expression matrix to PyTorch tensor
     try: 
-        x = torch.tensor(ctrl.X.A).float()
+        x = torch.tensor(ctrl.X.A).float()   # if sparse matrix
     except: 
-        x = torch.tensor(ctrl.X).float()
-    G = Data(x=x.T, edge_index=torch.tensor(edges[['source', 'target']].to_numpy().T)
-             , pos= list(nodes_list.gene_loc.values), edge_attr = torch.tensor(edges[0]))
-    return G   
+        x = torch.tensor(ctrl.X).float()     # if dense matrix
+
+    # Build PyTorch Geometric graph object
+    G = Data(
+        x=x.T,  # features: gene expression (genes × cells → transposed)
+        edge_index=torch.tensor(edges[['source', 'target']].to_numpy().T),
+        pos=list(nodes_list.gene_loc.values),
+        edge_attr=torch.tensor(edges[0])  # edge weights
+    )
+    return G
 
 #-----------------------------------------------------------------------------------------------------
 
