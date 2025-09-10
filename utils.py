@@ -175,26 +175,30 @@ def create_cells(stim_data, cell_type_network, canonical_smiles):
     obs = stim_data.obs
     print(obs.cell_type.unique(), obs.condition.unique())
 
-    # Group the data by cov_drug to avoid filtering repeatedly
+    # Group the AnnData object by cov_drug (cell_type + drug) to avoid repeated filtering
     cov_drug_groups = {
         cov_drug: stim_data[obs.cov_drug == cov_drug, :].copy()
         for cov_drug in obs.cov_drug.unique()
     }
 
+    # Iterate over each cov_drug group
     for cov_drug, adata_cov_drug in tq.tqdm(cov_drug_groups.items(), desc="Processing cov_drugs"):
         try:
+            # Split cov_drug string into cell_type and drug
             cell_type, drug = cov_drug.split("_", 1)
         except ValueError:
-            # If splitting fails, skip this group
+            # Skip this group if splitting fails
             continue
 
-        # Iterate over each sample in the current group
+        # Iterate over each sample (row) in the current group
         for sample in tq.tqdm(adata_cov_drug, leave=False, desc=f"Processing {cov_drug} samples"):
-            # Convert the control layer to a tensor
+            # Convert control expression layer to tensor
             x = torch.tensor(sample.layers['ctrl_x'])
+            # Convert perturbed expression to tensor (dense if sparse)
             y = torch.tensor(sample.X.A)
 
             if canonical_smiles is None:
+                # If no drug fingerprints are provided, store only cell/drug info
                 cell = Data(
                     x=x,
                     y=y,
@@ -203,9 +207,10 @@ def create_cells(stim_data, cell_type_network, canonical_smiles):
                     drug=drug
                 )
             else:
-                # Retrieve the condition from the sample's observation and convert the corresponding SMILES fingerprint to tensor
+                # Retrieve condition and get its drug fingerprint (SMILES → tensor)
                 condition = sample.obs['condition'].values[0]
                 pert = torch.tensor(canonical_smiles[condition]).unsqueeze(0)
+                # Include fingerprint in the graph data object
                 cell = Data(
                     x=x,
                     y=y,
@@ -214,9 +219,11 @@ def create_cells(stim_data, cell_type_network, canonical_smiles):
                     cov_drug=cov_drug,
                     drug=drug
                 )
+            # Append the constructed cell graph to the list
             cells.append(cell)
 
     return cells
+
 
 
 #-------------------------------------------------------------------------------------------------------------
