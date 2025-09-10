@@ -47,14 +47,12 @@ This directory contains the pre-processing notebooks for each dataset, starting 
 This directory contains the cell-type-specific graphs for each dataset, which are required to reproduce the results.
 
 ### Training
-
 This directory includes the training notebooks required to reproduce the figures for each dataset. While results may slightly differ from those reported in the paper, these variations do not affect the overall conclusions.
 
 ## Reproduciblity
+
 ### Setting up
-
 Create necessary directories:
-
 <pre>
 mkdir model_checkpoints
 mkdir Data
