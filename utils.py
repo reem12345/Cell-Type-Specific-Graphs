@@ -309,46 +309,75 @@ def balance_subsample(data, labels, total_samples, seed=None):
 
 
 #---------------------------------------------------------------------------------------------------------
-
 def train(model, num_epochs, lr, weight_decay, cell_type_network, train_loader, multi_pert = True):
     """
     The training function
     """
     
     print('Training Starts')
-    mse_loss = torch.nn.MSELoss(reduction = 'mean')
+    # Define mean squared error loss
+    mse_loss = torch.nn.MSELoss(reduction='mean')
+    
+    # Use GPU if available
     device = 'cuda'
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay= weight_decay)
+    
+    # Adam optimizer with learning rate and weight decay
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+    
+    # Move model to GPU and ensure float precision
     model = model.to(device).float()
+    
     num_epochs = num_epochs
+    # Iterate through epochs
     for epoch in tq.tqdm(range(num_epochs), leave=False):
         running_loss = 0.0
         train_epoch_loss = 0.0
         count = 0
+        
+        # Iterate through batches from train_loader
         for sample in tq.tqdm(train_loader, leave=False):
-            model.train()
-            sample = sample.to(device)
-            cell_type = sample.cell_type
-            ctrl = sample.x
+            model.train()  # set model to training mode
+            sample = sample.to(device)  # move batch to GPU
+            cell_type = sample.cell_type  # cell type(s) in the batch
+            ctrl = sample.x               # control expression features
+            
+            # Perturbation label (if multiple perturbations supported)
             if multi_pert:
                 pert_label = sample.pert_label
             else: 
                 pert_label = None
-            batch = sample.batch
-            y = sample.y
+            
+            batch = sample.batch   # batch indices
+            y = sample.y           # ground truth expression values
+            
+            # Collect cell-type-specific graph features (nodes, positions, edges)
             cell_graphs_x = {Cell: cell_type_network[Cell].x.to(device) for Cell in np.unique(cell_type)}
             cell_graphs_pos = {Cell: cell_type_network[Cell].pos.to(device) for Cell in np.unique(cell_type)}
             cell_graphs_edges = {Cell: cell_type_network[Cell].edge_index.to(device) for Cell in np.unique(cell_type)}
+            
+            # Forward pass through the model
             out = model(cell_graphs_x, cell_graphs_edges, 
                         cell_type, cell_graphs_edges.keys(), ctrl, pert_label, cell_graphs_pos)
-            loss = loss_fct(out,y, sample.cov_drug) 
+            
+            # Compute loss (custom loss function loss_fct used here)
+            loss = loss_fct(out, y, sample.cov_drug) 
+            
+            # Backpropagation
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            running_loss+= loss.item()
+            
+            # Accumulate batch loss
+            running_loss += loss.item()
+        
+        # Compute average loss per epoch
         train_epoch_loss = running_loss / len(train_loader)
         print(f"Epoch {epoch}, train loss: {train_epoch_loss}")
+    
+    # Return trained model
     return model
+
+
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 
 import numpy as np
