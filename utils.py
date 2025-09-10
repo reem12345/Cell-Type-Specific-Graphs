@@ -24,7 +24,6 @@ from torch_geometric.data import Data, Batch
 from torch_geometric.utils import to_undirected, is_undirected
 from torch_geometric.data import InMemoryDataset, Data, download_url, extract_zip, HeteroData, Batch
 from torch_geometric.utils import *
-import torch
 import ot
 from torch import nn
 device = 'cuda'
@@ -379,11 +378,6 @@ def train(model, num_epochs, lr, weight_decay, cell_type_network, train_loader, 
 
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------
-
-import numpy as np
-import pandas as pd
-import scanpy as sc
-import torch
 
 def create_anndata(pred_p, truth_p, adata, cell_type_network, p):
     # Extract cell type (c) and drug (d) from the input parameter `p`
