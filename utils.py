@@ -425,85 +425,121 @@ def create_anndata(pred_p, truth_p, adata, cell_type_network, p):
 
 #-----------------------------------------------------------------------------------------------------------------------------------------------
 
-
 def Inference_multi_pert(cell_type_network, model, save_path_res,
               ood_loader, adata, degs_dict, device = 'cuda', mean_or_std = True, plot = True, multi_pert = True):
     """
     The Inference function
     """
-    pred = []
-    truth = []
-    with torch.no_grad():
-        model.eval()
-        cov_drugs = []
-        for sample in tq.tqdm(ood_loader, leave=False):
-            sample = sample.to(device)
+    pred = []   # list to collect predictions
+    truth = []  # list to collect ground truth values
+    with torch.no_grad():  # disable gradient computation during inference
+        model.eval()       # set model to evaluation mode
+        cov_drugs = []     # list to store perturbation labels
+        for sample in tq.tqdm(ood_loader, leave=False):  # iterate over OOD data
+            sample = sample.to(device)   # move batch to device (GPU/CPU)
             cell_type = sample.cell_type
-            ctrl = sample.x
+            ctrl = sample.x              # control expression values
+            
+            # Perturbation labels (if multiple perturbations are supported)
             if multi_pert:
                 pert_label = sample.pert_label
             else: 
                 pert_label = None
+            
             batch = sample.batch
-            y = sample.y
+            y = sample.y   # true perturbed expression values
+            
+            # Build dictionaries for cell-type-specific graphs
             cell_graphs_x = {Cell: cell_type_network[Cell].x.to(device) for Cell in np.unique(cell_type)}
             cell_graphs_pos = {Cell: cell_type_network[Cell].pos.to(device) for Cell in np.unique(cell_type)}
             cell_graphs_edges = {Cell: cell_type_network[Cell].edge_index.to(device) for Cell in np.unique(cell_type)}
+            
+            # Forward pass
             out = model(cell_graphs_x, cell_graphs_edges, 
                         cell_type, cell_graphs_edges.keys(), ctrl, pert_label, cell_graphs_pos)
+            
+            # Collect predictions, truths, and perturbation identifiers
             pred.extend(out)
             truth.extend(y)
             cov_drugs.extend(sample.cov_drug)
    
+    # Convert prediction and truth lists into numpy arrays
     pred = torch.stack(pred)
     truth = torch.stack(truth)
     pred = (pred).cpu().numpy()
     truth = (truth).cpu().numpy()
     
+    # Perturbation identifiers for all samples
     perts = np.array(cov_drugs)
+    
+    # Loop through each unique perturbation
     for p in (set(perts)):
+        # Split into cell type and drug
         c = p.split('_')[0]
         d = p.split('_')[1]
+        
+        # Select positions of genes for this cell type
         pos_genes = cell_type_network[c].pos
+        
+        # Subset predictions and truths to only those genes
         p_pred = pred[:, pos_genes.tolist()] 
         p_truth = truth[:, pos_genes.tolist()]
+        
+        # Get indices of samples belonging to this perturbation
         pert_idx = np.where(perts == p)[0]
-        y_p = p_truth[pert_idx]
-        pred_p = p_pred[pert_idx]
+        y_p = p_truth[pert_idx]   # ground truth for this perturbation
+        pred_p = p_pred[pert_idx] # predictions for this perturbation
+        
+        # Create AnnData object with predictions, truth, and control
         Ann_Data = create_anndata(pred_p, y_p, adata, cell_type_network, p)
+        
+        # Attach DEGs for this perturbation
         DEGs = degs_dict[p]
         Ann_Data.uns['DEGs'] = DEGs
+        
+        # Save results to disk
         Ann_Data.write(save_path_res+p+'_pred.h5ad')
+        
+        # Compute mean squared error
         mse = np.mean((y_p - pred_p) ** 2)
         print(p, " mse: ", mse)
+        
+        # Compute R² either on mean or standard deviation of expression
         if mean_or_std:
-            x = np.mean(y_p, axis = 0)
-            y = np.mean(pred_p, axis = 0) 
+            # Mean expression comparison
+            x = np.mean(y_p, axis=0)
+            y = np.mean(pred_p, axis=0) 
             r2_all = metrics.r2_score(x, y)
             print(f"R² value for predicting the **mean** expression of all genes for perturbation '{p}': {r2_all:.4f}")
             r2_DEGs = metrics.r2_score(x[DEGs], y[DEGs])
             print(f"R² value for predicting the **mean** of the top 100 DEGs for perturbation '{p}': {r2_DEGs:.4f}")
         else: 
-            x = np.std(y_p, axis = 0) 
-            y = np.std(pred_p, axis = 0) 
+            # Standard deviation comparison
+            x = np.std(y_p, axis=0) 
+            y = np.std(pred_p, axis=0) 
             data_to_plot = np.vstack([x, y])
             r2_all = metrics.r2_score(x, y)
             print(f"R² value for predicting the **standard deviation** expression of all genes for perturbation '{p}': {r2_all:.4f}")
             r2_DEGs = metrics.r2_score(x[DEGs], y[DEGs])
             print(f"R² value for predicting the **standard deviation** of the top 100 DEGs for perturbation '{p}': {r2_DEGs:.4f}")
     
+        # Plotting settings
         sns.set_style("darkgrid")
         x_coeff = 0.35
         
+        # Generate scatter plot of predicted vs truth statistics
         if plot:
-            # Scatter plot
-            fig, ax =plt.subplots(figsize = (6,6))
-            sns.regplot(x = x, y = y, ci = None, color="#1C2E54")
-            y_coeff=0.8
-            ax.text( x.max() -x.max() * x_coeff, y.max() - y_coeff * y.max(),
-                    r'$\mathrm{R^2_{\mathrm{\mathsf{all\ genes}}}}$= '+ f"{r2_all:.4f}",fontsize = 'large',
-                )
-            y_coeff=0.9
-            ax.text( x.max() -x.max() * x_coeff, y.max() - y_coeff * y.max(),
-                   r'$\mathrm{R^2_{\mathrm{\mathsf{top\ 100 \ DEGs}}}}$= ' + f"{r2_DEGs:.4f}",fontsize = 'large',
-                )
+            fig, ax = plt.subplots(figsize=(6,6))
+            sns.regplot(x=x, y=y, ci=None, color="#1C2E54")
+            
+            # Annotate R² for all genes
+            y_coeff = 0.8
+            ax.text(x.max() - x.max() * x_coeff, y.max() - y_coeff * y.max(),
+                    r'$\mathrm{R^2_{\mathrm{\mathsf{all\ genes}}}}$= '+ f"{r2_all:.4f}",
+                    fontsize='large')
+            
+            # Annotate R² for top 100 DEGs
+            y_coeff = 0.9
+            ax.text(x.max() - x.max() * x_coeff, y.max() - y_coeff * y.max(),
+                   r'$\mathrm{R^2_{\mathrm{\mathsf{top\ 100 \ DEGs}}}}$= ' + f"{r2_DEGs:.4f}",
+                   fontsize='large')
