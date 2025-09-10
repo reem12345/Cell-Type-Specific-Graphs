@@ -59,9 +59,9 @@ mkdir Data
 </pre> 
 
 ### Data
-To reproduce the results for a specific dataset, download the processed data .h5ad and .pkl files (named after the dataset) from the following links, and place them in the Data folder you created during the installation steps:
+To reproduce the results for a specific dataset, download the processed data .h5ad and .pkl files (named after the dataset) from the following links, and place them in the Data folder created during the setup step:
 
-- All datasets are here : https://figshare.com/s/7beaf41998af17bdbe33  
+- All datasets are here: https://figshare.com/s/7beaf41998af17bdbe33  
 - NeurIPS dataset: https://figshare.com/s/b7f07ac5c522db3ba3af
 
 In case the user wants to generate the above preprocessed data from the raw data, run the corresponding notebook located in the `Data_Notebooks` directory.
