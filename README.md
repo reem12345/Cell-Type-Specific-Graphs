@@ -13,25 +13,25 @@
 
 ## Installation
 
-Create a conda environment with the required packages:
+1- Create a conda environment with Python (recommended version 3.8.19):
 <pre>
 conda create -n preprct python=3.8.19
-
 conda activate preprct
+</pre>
 
+2- Install the necesarry libraries (from `requeriments.txt`):
+<pre>
 pip install -r requirements.txt
-
 pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu117
-
 pip install jupyterlab
 pip install torch_geometric==2.5.3
 pip install ipywidgets --upgrade
+</pre>
 
-# After the conda environment is created, PrePR-CT is simply installed by cloning the repository
-  
+3- After previous steps are completed, PrePR-CT is simply installed by cloning the repository:
+<pre>
 git clone https://github.com/reem12345/Cell-Type-Specific-Graphs.git
 cd Cell-Type-Specific-Graphs/ 
-
 </pre>
 
 ## Directories
