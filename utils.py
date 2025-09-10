@@ -66,29 +66,37 @@ def loss_fct(pred, y, perts):
     return losses / len(set(perts))
     
 #--------------------------------------------------------------------------------------------------------------
-
 def Correlation_matrix(adata, cell_type, cell_type_key,
                        hv_genes_cells = None, union_HVGs = False):
-    # pairwise correlation
+    # compute pairwise gene-gene correlation matrix for a given cell type
+    
+    # subset AnnData object to the given cell type
     if union_HVGs:
-        ad = adata[ (adata.obs[cell_type_key] == cell_type), :].copy()
+        ad = adata[ (adata.obs[cell_type_key] == cell_type), :].copy()  # use all genes
     else:
-        ad = adata[ (adata.obs[cell_type_key] == cell_type), hv_genes_cells[cell_type] ].copy()
+        ad = adata[ (adata.obs[cell_type_key] == cell_type), hv_genes_cells[cell_type] ].copy()  # use HVGs for this cell type
+    
+    # extract expression matrix (dense or sparse)
     try: 
-        X = ad.X.A
+        X = ad.X.A  # if sparse, convert to dense array
     except: 
-        X = ad.X
-    genes = ad.var.index.values.tolist()
+        X = ad.X    # if already dense
     
+    genes = ad.var.index.values.tolist()  # gene names
+    
+    # compute correlation matrix across genes
     out = np.corrcoef(X, rowvar= False)
-    out[np.isnan(out)] = 0.0
+    out[np.isnan(out)] = 0.0  # replace NaNs with zeros
     
+    # flatten upper triangle values (optional, not used later)
     values = (out[np.triu_indices(len(genes), k = 1)].flatten())
     
+    # store correlation matrix in DataFrame with gene names
     out = pd.DataFrame((out), index = genes, columns = genes)
     
+    # reshape to long format (gene1, gene2, correlation)
     out = out.stack().reset_index()
-    return out
+    return out  # return correlation matrix in long-format DataFrame
 
 #--------------------------------------------------------------------------------------------------
  
