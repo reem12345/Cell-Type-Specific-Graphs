@@ -255,32 +255,58 @@ def rank_genes(dedf):
 #--------------------------------------------------------------------------------------------------------
 
 def balance_subsample(data, labels, total_samples, seed=None):
+    # Set random seed for reproducibility (if provided)
     if seed is not None:
         np.random.seed(seed)
+
+    # Get unique class labels and their counts
     unique_labels, class_counts = np.unique(labels, return_counts=True)
-    # To subset the remainder from the largest group
+
+    # Sort labels by their class size (smallest to largest)
+    # This ensures remainder samples are assigned starting from the largest group
     sorted_indices = np.argsort(class_counts)
     unique_labels = unique_labels[sorted_indices]
+
+    # Base number of samples to draw per class
     samples_per_class = np.floor_divide(total_samples, len(unique_labels))
+
+    # Remainder after equal distribution across classes
     rem = total_samples % len(unique_labels)
+
     total = total_samples
     balanced_data = []
+
+    # Iterate over each class
     for count, label in enumerate(unique_labels):
+        # Initialize deterministic random generator
         prng = RandomState(1234567890)
+
+        # Get indices of all samples belonging to this class
         indices = np.where(labels == label)[0]
+
+        # Sample from class (without replacement if enough samples, else with replacement)
         if int(samples_per_class) <= len(indices): 
             selected_indices = prng.choice(indices, int(samples_per_class), replace=False)
         else:
             selected_indices = prng.choice(indices, int(samples_per_class), replace=True)
+
+        # Add sampled data to the balanced dataset
         balanced_data.extend(data[selected_indices])
+
+        # Update remaining sample count
         total = total - int(samples_per_class)
+
+        # For the last class, handle the remainder distribution
         if count == (len(unique_labels)-1):
             if rem <= len(indices): 
                 selected_indices = prng.choice(indices, rem, replace=False)
             else: 
                 selected_indices = prng.choice(indices, rem, replace=True)
             balanced_data.extend(data[selected_indices])
+
+    # Return the final balanced dataset
     return balanced_data
+
 
 #---------------------------------------------------------------------------------------------------------
 
