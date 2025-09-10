@@ -42,6 +42,7 @@ This directory contains the pre-processing notebooks for each dataset, starting 
 * [NeurIPS dataset](https://www.kaggle.com/competitions/open-problems-single-cell-perturbations)
 * [McFarland and Chang datasets](http://projects.sanderlab.org/scperturb/datavzrd/scPerturb_vzrd_v1/dataset_info/index_1.html)
 * [Nault dataset](https://github.com/BhattacharyaLab/scVIDR/tree/main)
+* [LINCS dataset] (https://f003.backblazeb2.com/file/chemCPA-datasets/lincs_full.h5ad.gz)
 
 ### Graphs 
 This directory contains the cell-type-specific graphs for each dataset, which are required to reproduce the results.
