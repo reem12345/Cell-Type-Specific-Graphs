@@ -229,15 +229,28 @@ def create_cells(stim_data, cell_type_network, canonical_smiles):
 #-------------------------------------------------------------------------------------------------------------
 
 def rank_genes(dedf): 
+    # Compute absolute log fold changes (magnitude of change regardless of direction)
     dedf['abs_logfoldchanges'] = dedf['logfoldchanges'].abs()
-    # from the most significant to the less significant 
-    dedf["Rank_pvals_adj"] = dedf["pvals_adj"].rank(method = 'dense')
-    dedf["Rank_abs_logfoldchanges"] = dedf["abs_logfoldchanges"].rank(method = 'dense', ascending = False)
+
+    # Rank genes by adjusted p-values (smaller p-value = higher rank)
+    dedf["Rank_pvals_adj"] = dedf["pvals_adj"].rank(method='dense')
+
+    # Rank genes by absolute log fold changes (larger change = higher rank)
+    dedf["Rank_abs_logfoldchanges"] = dedf["abs_logfoldchanges"].rank(method='dense', ascending=False)
+
+    # Combine ranks using geometric mean of the two ranks
     dedf['Final_rank'] = (dedf["Rank_pvals_adj"] * dedf["Rank_abs_logfoldchanges"]) ** (1/2)
+
+    # Sort genes by the final combined ranking score
     dedf = dedf.sort_values('Final_rank')
+
+    # Select the top 100 genes as DEGs
     num_genes = 100
     DEGs_name = dedf.head(num_genes).names.values 
+
+    # Return the list of top-ranked gene names
     return list(DEGs_name)
+
 
 #--------------------------------------------------------------------------------------------------------
 
