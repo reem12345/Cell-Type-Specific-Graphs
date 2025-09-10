@@ -31,24 +31,40 @@ device = 'cuda'
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
-    
-def loss_fct(pred,y, perts):
-    """
-    EMD losses to train the model.
-    """
-    perts = np.array(perts)
-    losses = torch.tensor(0.0).to(pred.device)
-    for p in (set(perts)):
-        pert_idx = np.where(perts == p)[0]
-        y_p = y[pert_idx]
-        pred_p = pred[pert_idx]
-        ab = torch.ones(y_p.shape[0]) / y_p.shape[0]
-        M = ot.dist(pred_p, y_p, metric = 'euclidean').to(pred.device)
-        loss = ot.lp.emd2(ab.to(pred.device), ab, M)
-        losses = losses + loss
-        del M
-    return losses / (len(set(perts)))
 
+def loss_fct(pred, y, perts):
+    """
+    EMD (Earth Mover’s Distance) loss to train the model.
+    Computes distributional distance between predicted and true values,
+    grouped by perturbations.
+    """
+    perts = np.array(perts)  # Convert perturbation labels to NumPy array
+    losses = torch.tensor(0.0).to(pred.device)  # Initialize total loss on the same device as predictions
+    
+    # Loop over each unique perturbation
+    for p in set(perts):
+        pert_idx = np.where(perts == p)[0]   # Indices of samples for this perturbation
+        y_p = y[pert_idx]                    # True values for this perturbation
+        pred_p = pred[pert_idx]              # Predicted values for this perturbation
+        
+        # Uniform weights over samples in this perturbation
+        ab = torch.ones(y_p.shape[0]) / y_p.shape[0]
+        
+        # Compute pairwise cost (Euclidean distance) between predicted and true samples
+        M = ot.dist(pred_p, y_p, metric='euclidean').to(pred.device)
+        
+        # Compute Earth Mover’s Distance (optimal transport cost)
+        loss = ot.lp.emd2(ab.to(pred.device), ab, M)
+        
+        # Accumulate loss across perturbations
+        losses = losses + loss
+        
+        # Free memory by deleting cost matrix
+        del M
+    
+    # Average loss over number of unique perturbations
+    return losses / len(set(perts))
+    
 #--------------------------------------------------------------------------------------------------------------
 
 def Correlation_matrix(adata, cell_type, cell_type_key,
