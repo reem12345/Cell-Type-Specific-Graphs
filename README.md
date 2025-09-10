@@ -51,22 +51,22 @@ This directory includes the training notebooks required to reproduce the figures
 
 ## Reproduciblity
 
-### Setting up
+### 1- Setting up
 Create necessary directories:
 <pre>
 mkdir model_checkpoints
 mkdir Data
 </pre> 
 
-### Data
-To reproduce the results for a specific dataset, download the processed data .h5ad and .pkl files (named after the dataset) from the following links, and place them in the Data folder created during the setup step:
+### 2- Data
+To reproduce the results for a specific dataset, download the processed data _.h5ad_ and _.pkl_ files (named after the dataset) from the following links, and place them in the `Data` folder created during the setup step:
 
 - All datasets are here: https://figshare.com/s/7beaf41998af17bdbe33  
 - NeurIPS dataset: https://figshare.com/s/b7f07ac5c522db3ba3af
 
 In case the user wants to generate the above preprocessed data from the raw data, run the corresponding notebook located in the `Data_Notebooks` directory.
 
-### Running
+### 3- Usage
 The next step is to update the `config_train.yaml` file, located in the `training` folder, with the appropriate settings for the selected dataset. Below is an example of configuration parameters for different datasets used to reproduce the results. Once the configuration is set, run the `training_testing_demo.ipynb` notebook (located in the `training` folder) to train and test the model. For new datasets, we are actively working on improving reusability and flexibility.
 
 <pre>
@@ -125,6 +125,6 @@ testing_drugs: ['stimulated']
 multi_pert: False
 </pre>
 
-### Output
+### 4- Output
 
-In the `Results` directory, you will find an AnnData object (.h5ad) for each predicted (cell type, perturbation) pair. Each file contains both the observed and predicted gene expression profiles for the corresponding condition.
+In the `Results` directory, you will find an AnnData object (_.h5ad_) for each predicted (cell type, perturbation) pair. Each file contains both the observed and predicted gene expression profiles for the corresponding condition.
